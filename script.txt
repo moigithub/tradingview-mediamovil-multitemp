@@ -282,8 +282,8 @@ plot(showMA200 and show30Min ? plotMA200M30 : na, linewidth=1, color=color.new(c
 //plotshape(verde, title="verde", location=location.abovebar, color=color.green, style=shape.xcross)
 
 
-tolerance = input.float(title='Doji size tolerance', defval=0.1, minval=0)
-esDoji = math.abs(close - open) / (high - low) < tolerance
+// tolerance = input.float(title='Doji size tolerance', defval=0.1, minval=0)
+// esDoji = math.abs(close - open) / (high - low) < tolerance
 
 //**************************************
 inputVolumeFactor = input.float(title='Volume factor', minval=2, step=0.1, defval=2.5)
@@ -308,9 +308,7 @@ isPreviousCandleRed = close[1] < open[1]  // rojo  (index 1 => vela anterior)
 volAverage = ta.sma(volume, length)
 // vold1 rojo oscuro con mucho volumen
 prevCandleRojoHighVolume = volume[1] > volAverage * inputVolumeFactor and isPreviousCandleRed
-plotshape(prevCandleRojoHighVolume and isLastCandleGreen, title='RSV', location=location.belowbar, color=color.new(color.green, 20), style=shape.triangleup, size=size.normal, text='stop!')
-
-
+plotshape(inputStopCandle and prevCandleRojoHighVolume and isLastCandleGreen, title='RojoSuperaVerde', location=location.belowbar, color=color.new(color.green, 20), style=shape.triangleup, size=size.normal, text='stop!')
 
 
 //**************************************
@@ -322,17 +320,17 @@ isPreviousCandleGreen = close[1] > open[1]  // verde
 // idea indicador... de verde con mucho volumen --> A --> rojo
 // volu1 verde oscuro con mucho volumen
 prevCandleVerdeHighVolume = volume[1] > volAverage * inputVolumeFactor and isPreviousCandleGreen
-plotshape(prevCandleVerdeHighVolume and isLastCandleRed, title='VerdeSuperaRojo', location=location.abovebar, color=color.new(color.red, 20), style=shape.triangledown, size=size.normal, text='stop!')
+plotshape(inputStopCandle and prevCandleVerdeHighVolume and isLastCandleRed, title='VerdeSuperaRojo', location=location.abovebar, color=color.new(color.red, 20), style=shape.triangledown, size=size.normal, text='stop!')
 
 
 
 // muestra volumen entrando, una candle fuerte, cambiando de color
 inputPushCandle = input.bool(title='Show power candle?', tooltip='shows volume entering', defval=true)
 
-lastCandleVolume = volume > volAverage * inputVolumeFactor
+haveLastCandleHighVolume = volume > volAverage * inputVolumeFactor
 // de rojo a verde con juerza
-plotshape(isPreviousCandleRed and isLastCandleGreen and lastCandleVolume, title='R2V', location=location.belowbar, color=color.new(color.green, 20), style=shape.triangleup, size=size.small, text='push!')
+plotshape(inputPushCandle and isPreviousCandleRed and isLastCandleGreen and haveLastCandleHighVolume, title='R2V', location=location.belowbar, color=color.new(color.green, 20), style=shape.triangleup, size=size.small, text='push!')
 // de verde a rojo con juerza
-plotshape(isPreviousCandleGreen and isLastCandleRed and lastCandleVolume, title='V2R', location=location.abovebar, color=color.new(color.red, 20), style=shape.triangledown, size=size.small, text='push!')
+plotshape(inputPushCandle and isPreviousCandleGreen and isLastCandleRed and haveLastCandleHighVolume, title='V2R', location=location.abovebar, color=color.new(color.red, 20), style=shape.triangledown, size=size.small, text='push!')
 
 
