@@ -1,0 +1,338 @@
+//@version=5
+indicator('MAs Multi Temp. Volume check', shorttitle='MA\'s MultiTemp', overlay=true)
+
+showEMA20 = input(title='mostrar EMA 20', defval=true)
+showMA50 = input(title='mostrar MA 50', defval=true)
+showMA100 = input(title='mostrar MA 100', defval=false)
+showMA200 = input(title='mostrar MA 200', defval=true)
+
+showMonthly = input(title='indicador mensual', defval=true)
+showWeekly = input(title='indicador semanal', defval=true)
+showDayly = input(title='indicador diario', defval=true)
+show4Hour = input(title='indicador 4 horas', defval=true)
+show1Hour = input(title='indicador 1 hora', defval=true)
+show30Min = input(title='indicador 30 minutos', defval=false)
+
+showVWAP = input(title='VWAP', defval=true)
+
+
+// Take input for which daily SMAs to use
+inputEMA20 = input.int(title='EMA 20', minval=1, step=1, defval=20)
+inputMA50 = input.int(title='EMA 50', minval=1, step=1, defval=50)
+inputMA100 = input.int(title='EMA 100', minval=1, step=1, defval=100)
+inputMA200 = input.int(title='EMA 200', minval=1, step=1, defval=200)
+
+
+// volume color bars
+
+length = input.int(title='volume length', tooltip='how many candles will use to calculate volume strength', minval=1, step=1, defval=30)
+avrg = ta.sma(volume, length)
+
+// rojos
+vold1 = volume > avrg * 1.5 and close < open
+vold2 = volume >= avrg * 0.5 and volume <= avrg * 1.5 and close < open
+vold3 = volume < avrg * 0.5 and close < open
+
+//verdes
+volu1 = volume > avrg * 1.5 and close > open
+volu2 = volume >= avrg * 0.5 and volume <= avrg * 1.5 and close > open
+volu3 = volume < avrg * 0.5 and close > open
+
+
+cold1 = color.maroon
+cold2 = color.red
+cold3 = color.orange
+
+
+colu1 = color.rgb(0, 50, 0, 1)
+colu2 = color.rgb(0, 150, 0, 1)
+colu3 = color.rgb(0, 250, 0, 1)
+
+
+color = vold1 ? cold1 : vold2 ? cold2 : vold3 ? cold3 : volu1 ? colu1 : volu2 ? colu2 : volu3 ? colu3 : na
+
+barcolor(color)
+
+/// fin volume color bars
+
+// Evaluate EMAs 20
+EMA20 = ta.ema(close, inputEMA20)
+
+// eval sma 50, 100, 200
+MA50 = ta.sma(close, inputMA50)
+MA100 = ta.sma(close, inputMA100)
+MA200 = ta.sma(close, inputMA200)
+
+
+// Grab the otras temporalidades EMAs for the ticker
+plotEMA20M = request.security(syminfo.tickerid, 'M', EMA20)
+plotEMA20W = request.security(syminfo.tickerid, 'W', EMA20)
+plotEMA20D = request.security(syminfo.tickerid, 'D', EMA20)
+plotEMA20H4 = request.security(syminfo.tickerid, '240', EMA20)  // 240 minutos = 4 horas
+plotEMA20H1 = request.security(syminfo.tickerid, '60', EMA20)  // 60 minutos
+plotEMA20M30 = request.security(syminfo.tickerid, '30', EMA20)
+
+plotMA50M = request.security(syminfo.tickerid, 'M', MA50)
+plotMA50W = request.security(syminfo.tickerid, 'W', MA50)
+plotMA50D = request.security(syminfo.tickerid, 'D', MA50)
+plotMA50H4 = request.security(syminfo.tickerid, '240', MA50)
+plotMA50H1 = request.security(syminfo.tickerid, '60', MA50)
+plotMA50M30 = request.security(syminfo.tickerid, '30', MA50)
+
+plotMA100M = request.security(syminfo.tickerid, 'M', MA100)
+plotMA100W = request.security(syminfo.tickerid, 'W', MA100)
+plotMA100D = request.security(syminfo.tickerid, 'D', MA100)
+plotMA100H4 = request.security(syminfo.tickerid, '240', MA100)
+plotMA100H1 = request.security(syminfo.tickerid, '60', MA100)
+plotMA100M30 = request.security(syminfo.tickerid, '30', MA100)
+
+
+plotMA200M = request.security(syminfo.tickerid, 'M', MA200)
+plotMA200W = request.security(syminfo.tickerid, 'W', MA200)
+plotMA200D = request.security(syminfo.tickerid, 'D', MA200)
+plotMA200H4 = request.security(syminfo.tickerid, '240', MA200)
+plotMA200H1 = request.security(syminfo.tickerid, '60', MA200)
+plotMA200M30 = request.security(syminfo.tickerid, '30', MA200)
+
+
+vwapValue = ta.vwap(close)
+
+
+
+
+
+var offsetW = 10
+var offsetD = 8
+var offset4H = 6
+var offset1H = 4
+var offset30m = 2
+
+// we use minimal time of bars as an offset in future
+var float minBarTime = 999999999999
+currentTime = time(timeframe.period)
+timeOfCurrentBar = ta.change(currentTime, 1)
+minBarTime := not na(minBarTime) ? math.min(timeOfCurrentBar, minBarTime) : timeOfCurrentBar
+
+
+if showMonthly and barstate.islast
+    if showEMA20
+        var label l20m = label.new(bar_index, plotEMA20M, 'M', xloc=xloc.bar_time, yloc=yloc.price, color=color.white, style=label.style_label_left, textcolor=color.black, size=size.small)
+        label.set_x(l20m, int(currentTime + offsetW * minBarTime))
+        label.set_y(l20m, plotEMA20M)
+
+    if showMA50
+        var label l50w = label.new(bar_index, plotMA50W, 'M', xloc=xloc.bar_time, yloc=yloc.price, color=color.yellow, style=label.style_label_left, textcolor=color.black, size=size.small)
+        label.set_x(l50w, int(currentTime + offsetW * minBarTime))
+        label.set_y(l50w, plotMA50M)
+
+    if showMA100
+        var label l100w = label.new(bar_index, plotMA100W, 'M', xloc=xloc.bar_time, yloc=yloc.price, color=color.maroon, style=label.style_label_left, textcolor=color.black, size=size.small)
+        label.set_x(l100w, int(currentTime + offsetW * minBarTime))
+        label.set_y(l100w, plotMA100M)
+
+    if showMA200
+        var label l200w = label.new(bar_index, plotMA200W, 'M', xloc=xloc.bar_time, yloc=yloc.price, color=color.red, style=label.style_label_left, textcolor=color.black, size=size.small)
+        label.set_x(l200w, int(currentTime + offsetW * minBarTime))
+        label.set_y(l200w, plotMA200M)
+
+if showWeekly and barstate.islast
+    if showEMA20
+        var label l20w = label.new(bar_index, plotEMA20W, 'W', xloc=xloc.bar_time, yloc=yloc.price, color=color.white, style=label.style_label_left, textcolor=color.black, size=size.small)
+        label.set_x(l20w, int(currentTime + offsetW * minBarTime))
+        label.set_y(l20w, plotEMA20W)
+
+    if showMA50
+        var label l50w = label.new(bar_index, plotMA50W, 'W', xloc=xloc.bar_time, yloc=yloc.price, color=color.yellow, style=label.style_label_left, textcolor=color.black, size=size.small)
+        label.set_x(l50w, int(currentTime + offsetW * minBarTime))
+        label.set_y(l50w, plotMA50W)
+
+    if showMA100
+        var label l100w = label.new(bar_index, plotMA100W, 'W', xloc=xloc.bar_time, yloc=yloc.price, color=color.maroon, style=label.style_label_left, textcolor=color.black, size=size.small)
+        label.set_x(l100w, int(currentTime + offsetW * minBarTime))
+        label.set_y(l100w, plotMA100W)
+
+    if showMA200
+        var label l200w = label.new(bar_index, plotMA200W, 'W', xloc=xloc.bar_time, yloc=yloc.price, color=color.red, style=label.style_label_left, textcolor=color.black, size=size.small)
+        label.set_x(l200w, int(currentTime + offsetW * minBarTime))
+        label.set_y(l200w, plotMA200W)
+
+if showDayly and barstate.islast
+    if showEMA20
+        var label l = label.new(bar_index, plotEMA20D, 'D', xloc=xloc.bar_time, yloc=yloc.price, color=color.white, style=label.style_label_left, textcolor=color.black, size=size.small)
+        label.set_x(l, int(currentTime + offsetD * minBarTime))
+        label.set_y(l, plotEMA20D)
+
+    if showMA50
+        var label l50d = label.new(bar_index, plotMA50D, 'D', xloc=xloc.bar_time, yloc=yloc.price, color=color.yellow, style=label.style_label_left, textcolor=color.black, size=size.small)
+        label.set_x(l50d, int(currentTime + offsetD * minBarTime))
+        label.set_y(l50d, plotMA50D)
+
+    if showMA100
+        var label l100d = label.new(bar_index, plotMA100D, 'D', xloc=xloc.bar_time, yloc=yloc.price, color=color.maroon, style=label.style_label_left, textcolor=color.black, size=size.small)
+        label.set_x(l100d, int(currentTime + offsetD * minBarTime))
+        label.set_y(l100d, plotMA100D)
+
+    if showMA200
+        var label l200w = label.new(bar_index, plotMA200D, 'D', xloc=xloc.bar_time, yloc=yloc.price, color=color.red, style=label.style_label_left, textcolor=color.black, size=size.small)
+        label.set_x(l200w, int(currentTime + offsetD * minBarTime))
+        label.set_y(l200w, plotMA200D)
+
+if show4Hour and barstate.islast
+    if showEMA20
+        var label l = label.new(bar_index, plotEMA20H4, '4h', xloc=xloc.bar_time, yloc=yloc.price, color=color.white, style=label.style_label_left, textcolor=color.black, size=size.small)
+        label.set_x(l, int(currentTime + offset4H * minBarTime))
+        label.set_y(l, plotEMA20H4)
+
+    if showMA50
+        var label l50d = label.new(bar_index, plotMA50H4, '4h', xloc=xloc.bar_time, yloc=yloc.price, color=color.yellow, style=label.style_label_left, textcolor=color.black, size=size.small)
+        label.set_x(l50d, int(currentTime + offset4H * minBarTime))
+        label.set_y(l50d, plotMA50H4)
+
+    if showMA100
+        var label l100d = label.new(bar_index, plotMA100H4, '4h', xloc=xloc.bar_time, yloc=yloc.price, color=color.maroon, style=label.style_label_left, textcolor=color.black, size=size.small)
+        label.set_x(l100d, int(currentTime + offset4H * minBarTime))
+        label.set_y(l100d, plotMA100H4)
+
+    if showMA200
+        var label l200w = label.new(bar_index, plotMA200H4, '4h', xloc=xloc.bar_time, yloc=yloc.price, color=color.red, style=label.style_label_left, textcolor=color.black, size=size.small)
+        label.set_x(l200w, int(currentTime + offset4H * minBarTime))
+        label.set_y(l200w, plotMA200H4)
+
+if show1Hour and barstate.islast
+    if showEMA20
+        var label l = label.new(bar_index, plotEMA20H1, '1h', xloc=xloc.bar_time, yloc=yloc.price, color=color.white, style=label.style_label_left, textcolor=color.black, size=size.small)
+        label.set_x(l, int(currentTime + offset1H * minBarTime))
+        label.set_y(l, plotEMA20H1)
+
+    if showMA50
+        var label l50d = label.new(bar_index, plotMA50H1, '1h', xloc=xloc.bar_time, yloc=yloc.price, color=color.yellow, style=label.style_label_left, textcolor=color.black, size=size.small)
+        label.set_x(l50d, int(currentTime + offset1H * minBarTime))
+        label.set_y(l50d, plotMA50H1)
+
+    if showMA100
+        var label l100d = label.new(bar_index, plotMA100H1, '1h', xloc=xloc.bar_time, yloc=yloc.price, color=color.maroon, style=label.style_label_left, textcolor=color.black, size=size.small)
+        label.set_x(l100d, int(currentTime + offset1H * minBarTime))
+        label.set_y(l100d, plotMA100H1)
+
+    if showMA200
+        var label l200w = label.new(bar_index, plotMA200H1, '1h', xloc=xloc.bar_time, yloc=yloc.price, color=color.red, style=label.style_label_left, textcolor=color.black, size=size.small)
+        label.set_x(l200w, int(currentTime + offset1H * minBarTime))
+        label.set_y(l200w, plotMA200H1)
+
+if show30Min and barstate.islast
+    if showEMA20
+        var label l = label.new(bar_index, plotEMA20M30, '30m', xloc=xloc.bar_time, yloc=yloc.price, color=color.white, style=label.style_label_left, textcolor=color.black, size=size.small)
+        label.set_x(l, int(currentTime + offset30m * minBarTime))
+        label.set_y(l, plotEMA20M30)
+
+    if showMA50
+        var label l50d = label.new(bar_index, plotMA50M30, '30m', xloc=xloc.bar_time, yloc=yloc.price, color=color.yellow, style=label.style_label_left, textcolor=color.black, size=size.small)
+        label.set_x(l50d, int(currentTime + offset30m * minBarTime))
+        label.set_y(l50d, plotMA50M30)
+
+    if showMA100
+        var label l100d = label.new(bar_index, plotMA100M30, '30m', xloc=xloc.bar_time, yloc=yloc.price, color=color.maroon, style=label.style_label_left, textcolor=color.black, size=size.small)
+        label.set_x(l100d, int(currentTime + offset30m * minBarTime))
+        label.set_y(l100d, plotMA100M30)
+
+    if showMA200
+        var label l200w = label.new(bar_index, plotMA200M30, '30m', xloc=xloc.bar_time, yloc=yloc.price, color=color.red, style=label.style_label_left, textcolor=color.black, size=size.small)
+        label.set_x(l200w, int(currentTime + offset30m * minBarTime))
+        label.set_y(l200w, plotMA200M30)
+
+// Plot (e)MA current temporality
+plot(showVWAP ? vwapValue : na, color=color.new(color.teal, 0), linewidth=2)
+plot(EMA20, color=color.new(color.white, 0), linewidth=1)
+plot(MA50, color=color.new(color.yellow, 0), linewidth=1)
+plot(MA100, color=color.new(color.maroon, 0), linewidth=1)
+plot(MA200, color=color.new(color.red, 0), linewidth=1)
+
+// Plot the SMAs/EMAs
+plot(showEMA20 and showMonthly ? plotEMA20M : na, linewidth=2, color=bar_index % 3 == 0 ?color.new(color.blue, 15) : color.white, style=plot.style_stepline_diamond)
+plot(showEMA20 and showWeekly ? plotEMA20W : na, linewidth=2, color=color.new(color.white, 15), style=plot.style_cross)
+plot(showEMA20 and showDayly ? plotEMA20D : na, linewidth=3, color=bar_index % 3 == 0 ? color.gray : color.white)
+plot(showEMA20 and show4Hour ? plotEMA20H4 : na, linewidth=2, color=bar_index % 2 == 0 ? color.white : color.black)
+plot(showEMA20 and show1Hour ? plotEMA20H1 : na, linewidth=1, color=color.new(color.white, 15))
+plot(showEMA20 and show30Min ? plotEMA20M30 : na, linewidth=1, color=color.new(color.white, 15), style=plot.style_circles)
+
+plot(showMA50 and showMonthly ? plotMA50M : na, linewidth=2, color=bar_index % 3 == 0 ?color.new(color.blue, 15) : color.yellow, style=plot.style_stepline_diamond)
+plot(showMA50 and showWeekly ? plotMA50W : na, linewidth=2, color=color.new(color.yellow, 15), style=plot.style_cross)
+plot(showMA50 and showDayly ? plotMA50D : na, linewidth=3, color=bar_index % 3 == 0 ? color.gray : color.yellow)
+plot(showMA50 and show4Hour ? plotMA50H4 : na, linewidth=2, color=bar_index % 2 == 0 ? color.yellow : color.black)
+plot(showMA50 and show1Hour ? plotMA50H1 : na, linewidth=1, color=color.new(color.yellow, 15))
+plot(showMA50 and show30Min ? plotMA50M30 : na, linewidth=1, color=color.new(color.yellow, 15), style=plot.style_circles)
+
+plot(showMA100 and showMonthly ? plotMA100M : na, linewidth=2, color=bar_index % 3 == 0 ?color.new(color.blue, 15) : color.maroon, style=plot.style_stepline_diamond)
+plot(showMA100 and showWeekly ? plotMA100W : na, linewidth=2, color=color.new(color.maroon, 15), style=plot.style_cross)
+plot(showMA100 and showDayly ? plotMA100D : na, linewidth=3, color=bar_index % 3 == 0 ? color.gray : color.maroon)
+plot(showMA100 and show4Hour ? plotMA100H4 : na, linewidth=2, color=bar_index % 2 == 0 ? color.maroon : color.black)
+plot(showMA100 and show1Hour ? plotMA100H1 : na, linewidth=1, color=color.new(color.maroon, 15))
+plot(showMA100 and show30Min ? plotMA100M30 : na, linewidth=1, color=color.new(color.maroon, 15), style=plot.style_circles)
+
+plot(showMA200 and showMonthly ? plotMA200M : na, linewidth=2, color=bar_index % 3 == 0 ?color.new(color.blue, 15) : color.red, style=plot.style_stepline_diamond)
+plot(showMA200 and showWeekly ? plotMA200W : na, linewidth=2, color=color.new(#fa3c3c, 15), style=plot.style_cross)
+plot(showMA200 and showDayly ? plotMA200D : na, linewidth=3, color=bar_index % 3 == 0 ? color.gray : color.red)
+plot(showMA200 and show4Hour ? plotMA200H4 : na, linewidth=2, color=bar_index % 2 == 0 ? color.red : color.black)
+plot(showMA200 and show1Hour ? plotMA200H1 : na, linewidth=1, color=color.new(color.red, 15))
+plot(showMA200 and show30Min ? plotMA200M30 : na, linewidth=1, color=color.new(color.red, 15), style=plot.style_circles)
+
+
+/////////////////
+//verde = close > open
+//plotshape(verde, title="verde", location=location.abovebar, color=color.green, style=shape.xcross)
+
+
+tolerance = input.float(title='Doji size tolerance', defval=0.1, minval=0)
+esDoji = math.abs(close - open) / (high - low) < tolerance
+
+//**************************************
+inputVolumeFactor = input.float(title='Volume factor', minval=2, step=0.1, defval=2.5)
+inputStopCandle = input.bool(title='Show stop candle?', tooltip='previous candle have volume, next candle reverse showing it loosing power', defval=true)
+// VERDE SUPEra roja
+isLastCandleGreen = close[0] > open[0]  // verde ultimo vela (index 0 => ultima vela)
+isPreviousCandleRed = close[1] < open[1]  // rojo  (index 1 => vela anterior)
+// candleR2 = close[2] < open[2] // rojo
+// lastCandleSize = abs(high[0] - low[0])
+// prevCandleSize = abs(high[1] - low[1])
+// lastCandleBodySize = abs(open[0] - close[0])
+// prevCandleBodySize = abs(open[1] - close[1])
+//verdeSuperaRoja = isLastCandleGreen and isPreviousCandleRed and candleR2 and lastVCandleSize > prevRCandleSize and lastVCandleBodySize > prevRCandleBodySize and not esDoji
+
+
+// check con la ema 20 actual
+//EMA20debajoRoja = EMA20[0] < close[0]
+//distanciaREMA20 = abs(close[0]-EMA20[0])>lastRCandleSize and EMA20debajoRoja
+//plotshape(rojaSuperaVerde and distanciaREMA20, title="RSV", location=location.abovebar, color=color.white, style=shape.triangledown, size=size.tiny, transp=20)
+
+// idea indicador.. de rojo con mucho volumen --> A --> verde
+volAverage = ta.sma(volume, length)
+// vold1 rojo oscuro con mucho volumen
+prevCandleRojoHighVolume = volume[1] > volAverage * inputVolumeFactor and isPreviousCandleRed
+plotshape(prevCandleRojoHighVolume and isLastCandleGreen, title='RSV', location=location.belowbar, color=color.new(color.green, 20), style=shape.triangleup, size=size.normal, text='stop!')
+
+
+
+
+//**************************************
+// ROJO SUPEra verde
+isLastCandleRed = close[0] < open[0]  // rojo ultimo vela
+isPreviousCandleGreen = close[1] > open[1]  // verde
+// candleV2 = close[2] > open[2] // verde
+
+// idea indicador... de verde con mucho volumen --> A --> rojo
+// volu1 verde oscuro con mucho volumen
+prevCandleVerdeHighVolume = volume[1] > volAverage * inputVolumeFactor and isPreviousCandleGreen
+plotshape(prevCandleVerdeHighVolume and isLastCandleRed, title='VerdeSuperaRojo', location=location.abovebar, color=color.new(color.red, 20), style=shape.triangledown, size=size.normal, text='stop!')
+
+
+
+// muestra volumen entrando, una candle fuerte, cambiando de color
+inputPushCandle = input.bool(title='Show power candle?', tooltip='shows volume entering', defval=true)
+
+lastCandleVolume = volume > volAverage * inputVolumeFactor
+// de rojo a verde con juerza
+plotshape(isPreviousCandleRed and isLastCandleGreen and lastCandleVolume, title='R2V', location=location.belowbar, color=color.new(color.green, 20), style=shape.triangleup, size=size.small, text='push!')
+// de verde a rojo con juerza
+plotshape(isPreviousCandleGreen and isLastCandleRed and lastCandleVolume, title='V2R', location=location.abovebar, color=color.new(color.red, 20), style=shape.triangledown, size=size.small, text='push!')
+
+
