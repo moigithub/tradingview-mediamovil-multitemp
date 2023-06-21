@@ -107,7 +107,7 @@ var offset4H = 6
 var offset1H = 4
 var offset30m = 2
 
-// we use minimal time of bars as an offset in future
+// we use minimal time of bars as an offset in future 
 var float minBarTime = 999999999999
 currentTime = time(timeframe.period)
 timeOfCurrentBar = ta.change(currentTime, 1)
@@ -116,127 +116,127 @@ minBarTime := not na(minBarTime) ? math.min(timeOfCurrentBar, minBarTime) : time
 
 if showMonthly and barstate.islast
     if showEMA20
-        var label l20m = label.new(bar_index, plotEMA20M, 'M', xloc=xloc.bar_time, yloc=yloc.price, color=color.white, style=label.style_label_left, textcolor=color.black, size=size.small)
+        var label l20m = label.new(bar_index, plotEMA20M, '--- M', xloc=xloc.bar_time, yloc=yloc.price, color=color.green, style=label.style_none, textcolor=color.white, size=size.small)
         label.set_x(l20m, int(currentTime + offsetW * minBarTime))
         label.set_y(l20m, plotEMA20M)
 
     if showMA50
-        var label l50w = label.new(bar_index, plotMA50W, 'M', xloc=xloc.bar_time, yloc=yloc.price, color=color.yellow, style=label.style_label_left, textcolor=color.black, size=size.small)
+        var label l50w = label.new(bar_index, plotMA50W, '--- M', xloc=xloc.bar_time, yloc=yloc.price, color=color.yellow, style=label.style_none, textcolor=color.yellow, size=size.small)
         label.set_x(l50w, int(currentTime + offsetW * minBarTime))
         label.set_y(l50w, plotMA50M)
 
     if showMA100
-        var label l100w = label.new(bar_index, plotMA100W, 'M', xloc=xloc.bar_time, yloc=yloc.price, color=color.maroon, style=label.style_label_left, textcolor=color.black, size=size.small)
+        var label l100w = label.new(bar_index, plotMA100W, '--- M', xloc=xloc.bar_time, yloc=yloc.price, color=color.maroon, style=label.style_none, textcolor=color.maroon, size=size.small)
         label.set_x(l100w, int(currentTime + offsetW * minBarTime))
         label.set_y(l100w, plotMA100M)
 
     if showMA200
-        var label l200w = label.new(bar_index, plotMA200W, 'M', xloc=xloc.bar_time, yloc=yloc.price, color=color.red, style=label.style_label_left, textcolor=color.black, size=size.small)
+        var label l200w = label.new(bar_index, plotMA200W, '--- M', xloc=xloc.bar_time, yloc=yloc.price, color=color.red, style=label.style_text_outline, textcolor=color.black, size=size.small)
         label.set_x(l200w, int(currentTime + offsetW * minBarTime))
         label.set_y(l200w, plotMA200M)
 
 if showWeekly and barstate.islast
     if showEMA20
-        var label l20w = label.new(bar_index, plotEMA20W, 'W', xloc=xloc.bar_time, yloc=yloc.price, color=color.white, style=label.style_label_left, textcolor=color.black, size=size.small)
+        var label l20w = label.new(bar_index, plotEMA20W, '--- W', xloc=xloc.bar_time, yloc=yloc.price, color=color.white, style=label.style_none, textcolor=color.white, size=size.small)
         label.set_x(l20w, int(currentTime + offsetW * minBarTime))
         label.set_y(l20w, plotEMA20W)
 
     if showMA50
-        var label l50w = label.new(bar_index, plotMA50W, 'W', xloc=xloc.bar_time, yloc=yloc.price, color=color.yellow, style=label.style_label_left, textcolor=color.black, size=size.small)
+        var label l50w = label.new(bar_index, plotMA50W, '--- W', xloc=xloc.bar_time, yloc=yloc.price, color=color.yellow, style=label.style_none, textcolor=color.yellow, size=size.small)
         label.set_x(l50w, int(currentTime + offsetW * minBarTime))
         label.set_y(l50w, plotMA50W)
 
     if showMA100
-        var label l100w = label.new(bar_index, plotMA100W, 'W', xloc=xloc.bar_time, yloc=yloc.price, color=color.maroon, style=label.style_label_left, textcolor=color.black, size=size.small)
+        var label l100w = label.new(bar_index, plotMA100W, '--- W', xloc=xloc.bar_time, yloc=yloc.price, color=color.maroon, style=label.style_none, textcolor=color.maroon, size=size.small)
         label.set_x(l100w, int(currentTime + offsetW * minBarTime))
         label.set_y(l100w, plotMA100W)
 
     if showMA200
-        var label l200w = label.new(bar_index, plotMA200W, 'W', xloc=xloc.bar_time, yloc=yloc.price, color=color.red, style=label.style_label_left, textcolor=color.black, size=size.small)
+        var label l200w = label.new(bar_index, plotMA200W, '--- W', xloc=xloc.bar_time, yloc=yloc.price, color=color.red, style=label.style_text_outline, textcolor=color.black, size=size.small)
         label.set_x(l200w, int(currentTime + offsetW * minBarTime))
         label.set_y(l200w, plotMA200W)
 
 if showDayly and barstate.islast
     if showEMA20
-        var label l = label.new(bar_index, plotEMA20D, 'D', xloc=xloc.bar_time, yloc=yloc.price, color=color.white, style=label.style_label_left, textcolor=color.black, size=size.small)
+        var label l = label.new(bar_index, plotEMA20D, '--- D', xloc=xloc.bar_time, yloc=yloc.price, color=color.white, style=label.style_none, textcolor=color.white, size=size.small)
         label.set_x(l, int(currentTime + offsetD * minBarTime))
         label.set_y(l, plotEMA20D)
 
     if showMA50
-        var label l50d = label.new(bar_index, plotMA50D, 'D', xloc=xloc.bar_time, yloc=yloc.price, color=color.yellow, style=label.style_label_left, textcolor=color.black, size=size.small)
+        var label l50d = label.new(bar_index, plotMA50D, '--- D', xloc=xloc.bar_time, yloc=yloc.price, color=color.yellow, style=label.style_none, textcolor=color.yellow, size=size.small)
         label.set_x(l50d, int(currentTime + offsetD * minBarTime))
         label.set_y(l50d, plotMA50D)
 
     if showMA100
-        var label l100d = label.new(bar_index, plotMA100D, 'D', xloc=xloc.bar_time, yloc=yloc.price, color=color.maroon, style=label.style_label_left, textcolor=color.black, size=size.small)
+        var label l100d = label.new(bar_index, plotMA100D, '--- D', xloc=xloc.bar_time, yloc=yloc.price, color=color.maroon, style=label.style_none, textcolor=color.maroon, size=size.small)
         label.set_x(l100d, int(currentTime + offsetD * minBarTime))
         label.set_y(l100d, plotMA100D)
 
     if showMA200
-        var label l200w = label.new(bar_index, plotMA200D, 'D', xloc=xloc.bar_time, yloc=yloc.price, color=color.red, style=label.style_label_left, textcolor=color.black, size=size.small)
+        var label l200w = label.new(bar_index, plotMA200D, '--- D', xloc=xloc.bar_time, yloc=yloc.price, color=color.red, style=label.style_text_outline, textcolor=color.black, size=size.small)
         label.set_x(l200w, int(currentTime + offsetD * minBarTime))
         label.set_y(l200w, plotMA200D)
 
 if show4Hour and barstate.islast
     if showEMA20
-        var label l = label.new(bar_index, plotEMA20H4, '4h', xloc=xloc.bar_time, yloc=yloc.price, color=color.white, style=label.style_label_left, textcolor=color.black, size=size.small)
+        var label l = label.new(bar_index, plotEMA20H4, '--- 4h', xloc=xloc.bar_time, yloc=yloc.price, color=color.white, style=label.style_none, textcolor=color.white, size=size.small)
         label.set_x(l, int(currentTime + offset4H * minBarTime))
         label.set_y(l, plotEMA20H4)
 
     if showMA50
-        var label l50d = label.new(bar_index, plotMA50H4, '4h', xloc=xloc.bar_time, yloc=yloc.price, color=color.yellow, style=label.style_label_left, textcolor=color.black, size=size.small)
+        var label l50d = label.new(bar_index, plotMA50H4, '--- 4h', xloc=xloc.bar_time, yloc=yloc.price, color=color.yellow, style=label.style_none, textcolor=color.yellow, size=size.small)
         label.set_x(l50d, int(currentTime + offset4H * minBarTime))
         label.set_y(l50d, plotMA50H4)
 
     if showMA100
-        var label l100d = label.new(bar_index, plotMA100H4, '4h', xloc=xloc.bar_time, yloc=yloc.price, color=color.maroon, style=label.style_label_left, textcolor=color.black, size=size.small)
+        var label l100d = label.new(bar_index, plotMA100H4, '--- 4h', xloc=xloc.bar_time, yloc=yloc.price, color=color.maroon, style=label.style_none, textcolor=color.maroon, size=size.small)
         label.set_x(l100d, int(currentTime + offset4H * minBarTime))
         label.set_y(l100d, plotMA100H4)
 
     if showMA200
-        var label l200w = label.new(bar_index, plotMA200H4, '4h', xloc=xloc.bar_time, yloc=yloc.price, color=color.red, style=label.style_label_left, textcolor=color.black, size=size.small)
+        var label l200w = label.new(bar_index, plotMA200H4, '--- 4h', xloc=xloc.bar_time, yloc=yloc.price, color=color.red, style=label.style_text_outline, textcolor=color.black, size=size.small)
         label.set_x(l200w, int(currentTime + offset4H * minBarTime))
         label.set_y(l200w, plotMA200H4)
 
 if show1Hour and barstate.islast
     if showEMA20
-        var label l = label.new(bar_index, plotEMA20H1, '1h', xloc=xloc.bar_time, yloc=yloc.price, color=color.white, style=label.style_label_left, textcolor=color.black, size=size.small)
+        var label l = label.new(bar_index, plotEMA20H1, '--- 1h', xloc=xloc.bar_time, yloc=yloc.price, color=color.white, style=label.style_none, textcolor=color.white, size=size.small)
         label.set_x(l, int(currentTime + offset1H * minBarTime))
         label.set_y(l, plotEMA20H1)
 
     if showMA50
-        var label l50d = label.new(bar_index, plotMA50H1, '1h', xloc=xloc.bar_time, yloc=yloc.price, color=color.yellow, style=label.style_label_left, textcolor=color.black, size=size.small)
+        var label l50d = label.new(bar_index, plotMA50H1, '--- 1h', xloc=xloc.bar_time, yloc=yloc.price, color=color.yellow, style=label.style_none, textcolor=color.yellow, size=size.small)
         label.set_x(l50d, int(currentTime + offset1H * minBarTime))
         label.set_y(l50d, plotMA50H1)
 
     if showMA100
-        var label l100d = label.new(bar_index, plotMA100H1, '1h', xloc=xloc.bar_time, yloc=yloc.price, color=color.maroon, style=label.style_label_left, textcolor=color.black, size=size.small)
+        var label l100d = label.new(bar_index, plotMA100H1, '--- 1h', xloc=xloc.bar_time, yloc=yloc.price, color=color.maroon, style=label.style_none, textcolor=color.maroon, size=size.small)
         label.set_x(l100d, int(currentTime + offset1H * minBarTime))
         label.set_y(l100d, plotMA100H1)
 
     if showMA200
-        var label l200w = label.new(bar_index, plotMA200H1, '1h', xloc=xloc.bar_time, yloc=yloc.price, color=color.red, style=label.style_label_left, textcolor=color.black, size=size.small)
+        var label l200w = label.new(bar_index, plotMA200H1, '--- 1h', xloc=xloc.bar_time, yloc=yloc.price, color=color.red, style=label.style_text_outline, textcolor=color.black, size=size.small)
         label.set_x(l200w, int(currentTime + offset1H * minBarTime))
         label.set_y(l200w, plotMA200H1)
 
 if show30Min and barstate.islast
     if showEMA20
-        var label l = label.new(bar_index, plotEMA20M30, '30m', xloc=xloc.bar_time, yloc=yloc.price, color=color.white, style=label.style_label_left, textcolor=color.black, size=size.small)
+        var label l = label.new(bar_index, plotEMA20M30, '--- 30m', xloc=xloc.bar_time, yloc=yloc.price, color=color.white, style=label.style_none, textcolor=color.white, size=size.small)
         label.set_x(l, int(currentTime + offset30m * minBarTime))
         label.set_y(l, plotEMA20M30)
 
     if showMA50
-        var label l50d = label.new(bar_index, plotMA50M30, '30m', xloc=xloc.bar_time, yloc=yloc.price, color=color.yellow, style=label.style_label_left, textcolor=color.black, size=size.small)
+        var label l50d = label.new(bar_index, plotMA50M30, '--- 30m', xloc=xloc.bar_time, yloc=yloc.price, color=color.yellow, style=label.style_none, textcolor=color.yellow, size=size.small)
         label.set_x(l50d, int(currentTime + offset30m * minBarTime))
         label.set_y(l50d, plotMA50M30)
 
     if showMA100
-        var label l100d = label.new(bar_index, plotMA100M30, '30m', xloc=xloc.bar_time, yloc=yloc.price, color=color.maroon, style=label.style_label_left, textcolor=color.black, size=size.small)
+        var label l100d = label.new(bar_index, plotMA100M30, '--- 30m', xloc=xloc.bar_time, yloc=yloc.price, color=color.maroon, style=label.style_none, textcolor=color.maroon, size=size.small)
         label.set_x(l100d, int(currentTime + offset30m * minBarTime))
         label.set_y(l100d, plotMA100M30)
 
     if showMA200
-        var label l200w = label.new(bar_index, plotMA200M30, '30m', xloc=xloc.bar_time, yloc=yloc.price, color=color.red, style=label.style_label_left, textcolor=color.black, size=size.small)
+        var label l200w = label.new(bar_index, plotMA200M30, '--- 30m', xloc=xloc.bar_time, yloc=yloc.price, color=color.red, style=label.style_text_outline, textcolor=color.black, size=size.small)
         label.set_x(l200w, int(currentTime + offset30m * minBarTime))
         label.set_y(l200w, plotMA200M30)
 
@@ -286,7 +286,7 @@ plot(showMA200 and show30Min ? plotMA200M30 : na, linewidth=1, color=color.new(c
 // esDoji = math.abs(close - open) / (high - low) < tolerance
 
 //**************************************
-inputVolumeFactor = input.float(title='Volume factor', minval=2, step=0.1, defval=2.5)
+inputVolumeFactor = input.float(title='Volume factor', minval=1.5, step=0.1, defval=2.5)
 inputStopCandle = input.bool(title='Show stop candle?', tooltip='previous candle have volume, next candle reverse showing it loosing power', defval=true)
 // VERDE SUPEra roja
 isLastCandleGreen = close[0] > open[0]  // verde ultimo vela (index 0 => ultima vela)
@@ -294,10 +294,7 @@ isPreviousCandleRed = close[1] < open[1]  // rojo  (index 1 => vela anterior)
 // candleR2 = close[2] < open[2] // rojo
 // lastCandleSize = abs(high[0] - low[0])
 // prevCandleSize = abs(high[1] - low[1])
-// lastCandleBodySize = abs(open[0] - close[0])
-// prevCandleBodySize = abs(open[1] - close[1])
 //verdeSuperaRoja = isLastCandleGreen and isPreviousCandleRed and candleR2 and lastVCandleSize > prevRCandleSize and lastVCandleBodySize > prevRCandleBodySize and not esDoji
-
 
 // check con la ema 20 actual
 //EMA20debajoRoja = EMA20[0] < close[0]
@@ -308,7 +305,7 @@ isPreviousCandleRed = close[1] < open[1]  // rojo  (index 1 => vela anterior)
 volAverage = ta.sma(volume, length)
 // vold1 rojo oscuro con mucho volumen
 prevCandleRojoHighVolume = volume[1] > volAverage * inputVolumeFactor and isPreviousCandleRed
-plotshape(inputStopCandle and prevCandleRojoHighVolume and isLastCandleGreen, title='RojoSuperaVerde', location=location.belowbar, color=color.new(color.green, 20), style=shape.triangleup, size=size.normal, text='stop!')
+plotshape(inputStopCandle and prevCandleRojoHighVolume and isLastCandleGreen, title='RojoSuperaVerde', location=location.belowbar, color=color.new(color.green, 20), style=shape.triangleup,textcolor=color.fuchsia, size=size.normal, text='stop!')
 
 
 //**************************************
@@ -320,17 +317,43 @@ isPreviousCandleGreen = close[1] > open[1]  // verde
 // idea indicador... de verde con mucho volumen --> A --> rojo
 // volu1 verde oscuro con mucho volumen
 prevCandleVerdeHighVolume = volume[1] > volAverage * inputVolumeFactor and isPreviousCandleGreen
-plotshape(inputStopCandle and prevCandleVerdeHighVolume and isLastCandleRed, title='VerdeSuperaRojo', location=location.abovebar, color=color.new(color.red, 20), style=shape.triangledown, size=size.normal, text='stop!')
+plotshape(inputStopCandle and prevCandleVerdeHighVolume and isLastCandleRed, title='VerdeSuperaRojo', location=location.abovebar, color=color.new(color.red, 20), style=shape.triangledown,textcolor=color.fuchsia, size=size.normal, text='stop!')
 
 
 
 // muestra volumen entrando, una candle fuerte, cambiando de color
-inputPushCandle = input.bool(title='Show power candle?', tooltip='shows volume entering', defval=true)
+inputPushCandle = input.bool(title='Show power candle?', tooltip='shows attemp to reverse (Red<->Green) and high volume entering', defval=true)
 
 haveLastCandleHighVolume = volume > volAverage * inputVolumeFactor
 // de rojo a verde con juerza
-plotshape(inputPushCandle and isPreviousCandleRed and isLastCandleGreen and haveLastCandleHighVolume, title='R2V', location=location.belowbar, color=color.new(color.green, 20), style=shape.triangleup, size=size.small, text='push!')
-// de verde a rojo con juerza
-plotshape(inputPushCandle and isPreviousCandleGreen and isLastCandleRed and haveLastCandleHighVolume, title='V2R', location=location.abovebar, color=color.new(color.red, 20), style=shape.triangledown, size=size.small, text='push!')
 
 
+
+// la ultima vela es mas grande que la anterior
+inputShowLastCandleBigger = input.bool(title='Show last candle bigger?', tooltip='last candle is bigger than previous', defval=true)
+
+lastCandleBodySize = math.abs(open[0] - close[0])
+prevCandleBodySize = math.abs(open[1] - close[1])
+lastCandleIsBigger = lastCandleBodySize > prevCandleBodySize
+
+
+
+if (inputPushCandle and isPreviousCandleRed and isLastCandleGreen and haveLastCandleHighVolume)
+    // de rojo a verde con juerza
+    if (inputShowLastCandleBigger and lastCandleIsBigger)
+        // rojo supera verde
+        myLabel = label.new(x=bar_index, y=na, yloc=yloc.belowbar, text="push R->V", color=color.new(color.green, 20), textcolor=color.yellow, style=label.style_triangleup,  size=size.small)
+    else
+        myLabel = label.new(x=bar_index, y=na, yloc=yloc.belowbar, text="push", color=color.new(color.green, 20), textcolor=color.yellow, style=label.style_triangleup,  size=size.small)
+
+
+if (inputPushCandle and isPreviousCandleGreen and isLastCandleRed and haveLastCandleHighVolume)
+    // de verde a rojo con juerza
+    if (inputShowLastCandleBigger and lastCandleIsBigger)
+        // verde supera rojo
+        lbl = label.new(x=bar_index, y=na, yloc=yloc.abovebar, text="push V->R", color=color.new(color.red, 20), textcolor=color.yellow, style=label.style_triangledown,  size=size.small)
+    else
+    // if (not inputShowLastCandleBigger)
+        lbl = label.new(x=bar_index, y=na, yloc=yloc.abovebar, text="push", color=color.new(color.red, 20), textcolor=color.yellow, style=label.style_triangledown,  size=size.small)
+
+ 
