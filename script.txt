@@ -356,4 +356,12 @@ if (inputPushCandle and isPreviousCandleGreen and isLastCandleRed and haveLastCa
     // if (not inputShowLastCandleBigger)
         lbl = label.new(x=bar_index, y=na, yloc=yloc.abovebar, text="push", color=color.new(color.red, 20), textcolor=color.yellow, style=label.style_triangledown,  size=size.small)
 
+ // rsi background oversold, overbought
+inputShowOverSoldBoughtOverlay = input.bool(title='Show oversold/overbought overlay?', tooltip='overlay oversold/overbought', defval=true)
+len = input.int(title='rsi len', minval=1, step=1, defval=14)
+overbought = input.int(title="OB", defval=70)
+oversold = input.int(title="OS", defval=30)
  
+barsToPaint = 1
+bgcolor(inputShowOverSoldBoughtOverlay and ta.barssince(ta.rsi(close, len) >= overbought) < barsToPaint ? color.new(color.green, 80) : na)
+bgcolor(inputShowOverSoldBoughtOverlay and ta.barssince(ta.rsi(close, len) <= oversold) < barsToPaint ? color.new(color.red, 80) : na) 
