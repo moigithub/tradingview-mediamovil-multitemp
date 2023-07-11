@@ -286,7 +286,7 @@ plot(showMA200 and show30Min ? plotMA200M30 : na, linewidth=1, color=color.new(c
 // esDoji = math.abs(close - open) / (high - low) < tolerance
 
 //**************************************
-inputVolumeFactor = input.float(title='Volume factor', minval=1.5, step=0.1, defval=2.5)
+inputVolumeFactor = input.float(title='Volume factor', minval=1.5, step=0.1, defval=2.5, tooltip = 'new candle vol VS prev.candles vol average')
 inputStopCandle = input.bool(title='Show stop candle?', tooltip='previous candle have volume, next candle reverse showing it loosing power', defval=true)
 // VERDE SUPEra roja
 isLastCandleGreen = close[0] > open[0]  // verde ultimo vela (index 0 => ultima vela)
@@ -305,7 +305,7 @@ isPreviousCandleRed = close[1] < open[1]  // rojo  (index 1 => vela anterior)
 volAverage = ta.sma(volume, length)
 // vold1 rojo oscuro con mucho volumen
 prevCandleRojoHighVolume = volume[1] > volAverage * inputVolumeFactor and isPreviousCandleRed
-plotshape(inputStopCandle and prevCandleRojoHighVolume and isLastCandleGreen, title='RojoSuperaVerde', location=location.belowbar, color=color.new(color.green, 20), style=shape.triangleup,textcolor=color.fuchsia, size=size.normal, text='stop!')
+plotshape(inputStopCandle and prevCandleRojoHighVolume and isLastCandleGreen, title='RojoSuperaVerde', location=location.belowbar, color=color.new(color.green, 40), style=shape.triangleup,textcolor=color.fuchsia, size=size.normal, text='stop!')
 
 
 //**************************************
@@ -317,7 +317,7 @@ isPreviousCandleGreen = close[1] > open[1]  // verde
 // idea indicador... de verde con mucho volumen --> A --> rojo
 // volu1 verde oscuro con mucho volumen
 prevCandleVerdeHighVolume = volume[1] > volAverage * inputVolumeFactor and isPreviousCandleGreen
-plotshape(inputStopCandle and prevCandleVerdeHighVolume and isLastCandleRed, title='VerdeSuperaRojo', location=location.abovebar, color=color.new(color.red, 20), style=shape.triangledown,textcolor=color.fuchsia, size=size.normal, text='stop!')
+plotshape(inputStopCandle and prevCandleVerdeHighVolume and isLastCandleRed, title='VerdeSuperaRojo', location=location.abovebar, color=color.new(color.red, 40), style=shape.triangledown,textcolor=color.fuchsia, size=size.normal, text='stop!')
 
 
 
@@ -342,19 +342,19 @@ if (inputPushCandle and isPreviousCandleRed and isLastCandleGreen and haveLastCa
     // de rojo a verde con juerza
     if (inputShowLastCandleBigger and lastCandleIsBigger)
         // rojo supera verde
-        myLabel = label.new(x=bar_index, y=na, yloc=yloc.belowbar, text="push R->V", color=color.new(color.green, 20), textcolor=color.yellow, style=label.style_triangleup,  size=size.small)
+        myLabel = label.new(x=bar_index, y=na, yloc=yloc.belowbar, text="push R->V", color=color.new(color.green, 40), textcolor=color.yellow, style=label.style_triangleup,  size=size.small)
     else
-        myLabel = label.new(x=bar_index, y=na, yloc=yloc.belowbar, text="push", color=color.new(color.green, 20), textcolor=color.yellow, style=label.style_triangleup,  size=size.small)
+        myLabel = label.new(x=bar_index, y=na, yloc=yloc.belowbar, text="push", color=color.new(color.green, 40), textcolor=color.yellow, style=label.style_triangleup,  size=size.small)
 
 
 if (inputPushCandle and isPreviousCandleGreen and isLastCandleRed and haveLastCandleHighVolume)
     // de verde a rojo con juerza
     if (inputShowLastCandleBigger and lastCandleIsBigger)
         // verde supera rojo
-        lbl = label.new(x=bar_index, y=na, yloc=yloc.abovebar, text="push V->R", color=color.new(color.red, 20), textcolor=color.yellow, style=label.style_triangledown,  size=size.small)
+        lbl = label.new(x=bar_index, y=na, yloc=yloc.abovebar, text="push V->R", color=color.new(color.red, 40), textcolor=color.yellow, style=label.style_triangledown,  size=size.small)
     else
     // if (not inputShowLastCandleBigger)
-        lbl = label.new(x=bar_index, y=na, yloc=yloc.abovebar, text="push", color=color.new(color.red, 20), textcolor=color.yellow, style=label.style_triangledown,  size=size.small)
+        lbl = label.new(x=bar_index, y=na, yloc=yloc.abovebar, text="push", color=color.new(color.red, 40), textcolor=color.yellow, style=label.style_triangledown,  size=size.small)
 
  // rsi background oversold, overbought
 inputShowOverSoldBoughtOverlay = input.bool(title='Show oversold/overbought overlay?', tooltip='overlay oversold/overbought', defval=true)
@@ -365,3 +365,53 @@ oversold = input.int(title="OS", defval=30)
 barsToPaint = 1
 bgcolor(inputShowOverSoldBoughtOverlay and ta.barssince(ta.rsi(close, len) >= overbought) < barsToPaint ? color.new(color.green, 80) : na)
 bgcolor(inputShowOverSoldBoughtOverlay and ta.barssince(ta.rsi(close, len) <= oversold) < barsToPaint ? color.new(color.red, 80) : na) 
+
+
+//----------------
+// bolinger bands
+//----------------
+inputShowBolinger = input.bool(title='Show bolinger', tooltip='show bolinger bars', defval=true)
+bolingerlength = input.int(title='bolinger length', minval=1, step=1, defval=20)
+src = input.source(close, title="Source")
+mult = input.float(defval=2.0, minval=0.001, maxval=10, step=0.2)
+mult2 = input.float(defval=1.0, minval=0.001, maxval=10, step=0.2)
+
+basis = ta.ema(src, bolingerlength)
+dev = mult * ta.stdev(src, bolingerlength)
+dev2 = mult2 * ta.stdev(src, bolingerlength)
+upper = basis + dev
+lower = basis - dev
+plot(basis, color=color.red) //sma
+p1a = plot(inputShowBolinger ? upper : na, color= color.orange)
+p1b = plot(inputShowBolinger ? lower : na, color= color.orange)
+fill(p1a, p1b, color= color.rgb(85, 116, 228, 88))
+
+basis2 = ta.vwma(src, bolingerlength)
+upper2 = basis2 + dev2
+lower2 = basis2 - dev2
+plot(basis2, color=color.red) //vol weight ma
+p2a = plot(inputShowBolinger ? upper2 : na, color= color.teal)
+p2b = plot(inputShowBolinger ? lower2 : na, color= color.teal)
+fill(p2a, p2b, color= color.rgb( 11, 85, 28, 88))
+
+// bool longSignal = ta.rising(close, 2) and ta.rising(high, 2) and ta.rising(volume, 2) and ta.crossover(close, lower2)
+candleSize = high-low
+candleSliceAbove = high - upper
+candleSliceBelow = lower-low
+percentAbove = candleSliceAbove * 100/candleSize
+percentBelow = candleSliceBelow * 100/candleSize
+ 
+percentAmount = input.int(title='candle percent',tooltip='slice of candle percent belor or above bolinger band limit', minval=1, step=1, defval=10)  //10% above or below bolinger band limit 
+
+// (bajo y volvio a subir) cerro dentro del BB  -- la mecha fuera es mayor que X%
+plotchar(ta.crossover(close, lower2) and percentBelow > percentAmount, "long", "🠅", location.belowbar, color.rgb(0, 230, 119, 10), size = size.small)
+plotchar(ta.crossover(close, lower) and percentBelow > percentAmount, "long", "🠅", location.belowbar, color.rgb(223, 64, 251, 10), size = size.normal)
+
+// (subio y volvio a bajar) cerro dentro del BB  -- la mecha fuera es mayor que X%
+plotchar(ta.crossunder(close, upper2) and percentAbove > percentAmount, "sell", "🠇", location.abovebar, color.rgb(0, 230, 119, 10), size = size.small)
+plotchar(ta.crossunder(close, upper) and percentAbove > percentAmount, "sell", "🠇", location.abovebar, color.rgb(223, 64, 251, 10), size = size.normal)
+
+//  rsi en sobreventa  --- salio fuera del bolinger band --- cerro dentro del BB -- la mecha fuera es mayor que X%
+plotchar(ta.rsi(close, len) < oversold and low<lower and close>lower and percentBelow > percentAmount, "long", "🠅", location.belowbar, color.rgb(104, 77, 225, 10), size = size.large)
+//  rsi en sobrecompra  --- salio fuera del BB -- cerro dentro del BB  -- la mecha fuera es mayor que X%
+plotchar(ta.rsi(close, len) >= overbought and high>upper  and close<upper and percentAbove > percentAmount, "sell", "🠇", location.abovebar, color.rgb(104, 77, 225, 10), size = size.large)
