@@ -7,11 +7,17 @@ showMA100 = input(title='mostrar MA 100', defval=false)
 showMA200 = input(title='mostrar MA 200', defval=true)
 
 showMonthly = input(title='indicador mensual', defval=true)
+showMonthlyLabelOnly = input.bool(title='indicador mensual (solo marca)', tooltip='only show a mark at right without ploting the MA', defval=false)
 showWeekly = input(title='indicador semanal', defval=true)
+showWeeklyLabelOnly = input.bool(title='indicador semanal (solo marca)', tooltip='only show a mark at right without ploting the MA', defval=false)
 showDayly = input(title='indicador diario', defval=true)
+showDaylyLabelOnly = input.bool(title='indicador diario (solo marca)', tooltip='only show a mark at right without ploting the MA', defval=false)
 show4Hour = input(title='indicador 4 horas', defval=true)
+show4HourLabelOnly = input.bool(title='indicador 4 horas (solo marca)', tooltip='only show a mark at right without ploting the MA', defval=false)
 show1Hour = input(title='indicador 1 hora', defval=true)
+show1HourLabelOnly = input.bool(title='indicador 1 hora (solo marca)', tooltip='only show a mark at right without ploting the MA', defval=false)
 show30Min = input(title='indicador 30 minutos', defval=false)
+show30MinLabelOnly = input.bool(title='indicador 30 minutos (solo marca)', tooltip='only show a mark at right without ploting the MA', defval=false)
 
 showVWAP = input(title='VWAP', defval=true)
 barcolor = input.bool(title='color bar', defval = true, tooltip = 'bar color based on buy/sell volume, instead of open/close')
@@ -114,11 +120,12 @@ vwapValue = ta.vwap(close)
 
 
 
-var offsetW = 10
-var offsetD = 8
-var offset4H = 6
-var offset1H = 4
-var offset30m = 2
+var offsetW = 15
+var offsetD = 12
+var offset4H = 9
+var offset1H = 6
+var offset30m = 3
+var offsetVWAP = 18
 
 // we use minimal time of bars as an offset in future 
 var float minBarTime = 999999999999
@@ -253,41 +260,52 @@ if show30Min and barstate.islast
         label.set_x(l200w, int(currentTime + offset30m * minBarTime))
         label.set_y(l200w, plotMA200M30)
 
-// Plot (e)MA current temporality
+if showVWAP
+    var label wvapLabel = label.new(bar_index, vwapValue, '----- VWAP', xloc=xloc.bar_time, yloc=yloc.price, color=color.green, style=label.style_none, textcolor=color.lime, size=size.small)
+    label.set_x(wvapLabel, int(currentTime + offsetVWAP* minBarTime))
+    label.set_y(wvapLabel, vwapValue)
+
+// Plot VWAP current temporality
 plot(showVWAP ? vwapValue : na, color=color.new(color.teal, 0), linewidth=2)
+// Plot (e)MA current temporality
 plot(EMA20, color=color.new(color.white, 0), linewidth=1)
 plot(MA50, color=color.new(color.yellow, 0), linewidth=1)
 plot(MA100, color=color.new(color.maroon, 0), linewidth=1)
 plot(MA200, color=color.new(color.red, 0), linewidth=1)
 
+
+
+
+
+
 // Plot the SMAs/EMAs
-plot(showEMA20 and showMonthly ? plotEMA20M : na, linewidth=2, color=bar_index % 3 == 0 ?color.new(color.blue, 15) : color.white, style=plot.style_stepline_diamond)
-plot(showEMA20 and showWeekly ? plotEMA20W : na, linewidth=2, color=color.new(color.white, 15), style=plot.style_cross)
-plot(showEMA20 and showDayly ? plotEMA20D : na, linewidth=3, color=bar_index % 3 == 0 ? color.gray : color.white)
-plot(showEMA20 and show4Hour ? plotEMA20H4 : na, linewidth=2, color=bar_index % 2 == 0 ? color.white : color.black)
-plot(showEMA20 and show1Hour ? plotEMA20H1 : na, linewidth=1, color=color.new(color.white, 15))
-plot(showEMA20 and show30Min ? plotEMA20M30 : na, linewidth=1, color=color.new(color.white, 15), style=plot.style_circles)
+plot(not showMonthlyLabelOnly and showEMA20 and showMonthly ? plotEMA20M : na, linewidth=2, color=bar_index % 3 == 0 ?color.new(color.blue, 15) : color.white, style=plot.style_stepline_diamond)
+plot(not showWeeklyLabelOnly and showEMA20 and showWeekly ? plotEMA20W : na, linewidth=2, color=color.new(color.white, 15), style=plot.style_cross)
+plot(not showDaylyLabelOnly and showEMA20 and showDayly ? plotEMA20D : na, linewidth=3, color=bar_index % 3 == 0 ? color.gray : color.white)
+plot(not show4HourLabelOnly and showEMA20 and show4Hour ? plotEMA20H4 : na, linewidth=2, color=bar_index % 2 == 0 ? color.white : color.black)
+plot(not show1HourLabelOnly and showEMA20 and show1Hour ? plotEMA20H1 : na, linewidth=1, color=color.new(color.white, 15))
+plot(not show30MinLabelOnly and showEMA20 and show30Min ? plotEMA20M30 : na, linewidth=1, color=color.new(color.white, 15), style=plot.style_circles)
 
-plot(showMA50 and showMonthly ? plotMA50M : na, linewidth=2, color=bar_index % 3 == 0 ?color.new(color.blue, 15) : color.yellow, style=plot.style_stepline_diamond)
-plot(showMA50 and showWeekly ? plotMA50W : na, linewidth=2, color=color.new(color.yellow, 15), style=plot.style_cross)
-plot(showMA50 and showDayly ? plotMA50D : na, linewidth=3, color=bar_index % 3 == 0 ? color.gray : color.yellow)
-plot(showMA50 and show4Hour ? plotMA50H4 : na, linewidth=2, color=bar_index % 2 == 0 ? color.yellow : color.black)
-plot(showMA50 and show1Hour ? plotMA50H1 : na, linewidth=1, color=color.new(color.yellow, 15))
-plot(showMA50 and show30Min ? plotMA50M30 : na, linewidth=1, color=color.new(color.yellow, 15), style=plot.style_circles)
+plot(not showMonthlyLabelOnly and showMA50 and showMonthly ? plotMA50M : na, linewidth=2, color=bar_index % 3 == 0 ?color.new(color.blue, 15) : color.yellow, style=plot.style_stepline_diamond)
+plot(not showWeeklyLabelOnly and showMA50 and showWeekly ? plotMA50W : na, linewidth=2, color=color.new(color.yellow, 15), style=plot.style_cross)
+plot(not showDaylyLabelOnly and showMA50 and showDayly ? plotMA50D : na, linewidth=3, color=bar_index % 3 == 0 ? color.gray : color.yellow)
+plot(not show4HourLabelOnly and showMA50 and show4Hour ? plotMA50H4 : na, linewidth=2, color=bar_index % 2 == 0 ? color.yellow : color.black)
+plot(not show1HourLabelOnly and showMA50 and show1Hour ? plotMA50H1 : na, linewidth=1, color=color.new(color.yellow, 15))
+plot(not show30MinLabelOnly and showMA50 and show30Min ? plotMA50M30 : na, linewidth=1, color=color.new(color.yellow, 15), style=plot.style_circles)
 
-plot(showMA100 and showMonthly ? plotMA100M : na, linewidth=2, color=bar_index % 3 == 0 ?color.new(color.blue, 15) : color.maroon, style=plot.style_stepline_diamond)
-plot(showMA100 and showWeekly ? plotMA100W : na, linewidth=2, color=color.new(color.maroon, 15), style=plot.style_cross)
-plot(showMA100 and showDayly ? plotMA100D : na, linewidth=3, color=bar_index % 3 == 0 ? color.gray : color.maroon)
-plot(showMA100 and show4Hour ? plotMA100H4 : na, linewidth=2, color=bar_index % 2 == 0 ? color.maroon : color.black)
-plot(showMA100 and show1Hour ? plotMA100H1 : na, linewidth=1, color=color.new(color.maroon, 15))
-plot(showMA100 and show30Min ? plotMA100M30 : na, linewidth=1, color=color.new(color.maroon, 15), style=plot.style_circles)
+plot(not showMonthlyLabelOnly and showMA100 and showMonthly ? plotMA100M : na, linewidth=2, color=bar_index % 3 == 0 ?color.new(color.blue, 15) : color.maroon, style=plot.style_stepline_diamond)
+plot(not showWeeklyLabelOnly and showMA100 and showWeekly ? plotMA100W : na, linewidth=2, color=color.new(color.maroon, 15), style=plot.style_cross)
+plot(not showDaylyLabelOnly and showMA100 and showDayly ? plotMA100D : na, linewidth=3, color=bar_index % 3 == 0 ? color.gray : color.maroon)
+plot(not show4HourLabelOnly and showMA100 and show4Hour ? plotMA100H4 : na, linewidth=2, color=bar_index % 2 == 0 ? color.maroon : color.black)
+plot(not show1HourLabelOnly and showMA100 and show1Hour ? plotMA100H1 : na, linewidth=1, color=color.new(color.maroon, 15))
+plot(not show30MinLabelOnly and showMA100 and show30Min ? plotMA100M30 : na, linewidth=1, color=color.new(color.maroon, 15), style=plot.style_circles)
 
-plot(showMA200 and showMonthly ? plotMA200M : na, linewidth=2, color=bar_index % 3 == 0 ?color.new(color.blue, 15) : color.red, style=plot.style_stepline_diamond)
-plot(showMA200 and showWeekly ? plotMA200W : na, linewidth=2, color=color.new(#fa3c3c, 15), style=plot.style_cross)
-plot(showMA200 and showDayly ? plotMA200D : na, linewidth=3, color=bar_index % 3 == 0 ? color.gray : color.red)
-plot(showMA200 and show4Hour ? plotMA200H4 : na, linewidth=2, color=bar_index % 2 == 0 ? color.red : color.black)
-plot(showMA200 and show1Hour ? plotMA200H1 : na, linewidth=1, color=color.new(color.red, 15))
-plot(showMA200 and show30Min ? plotMA200M30 : na, linewidth=1, color=color.new(color.red, 15), style=plot.style_circles)
+plot(not showMonthlyLabelOnly and showMA200 and showMonthly ? plotMA200M : na, linewidth=2, color=bar_index % 3 == 0 ?color.new(color.blue, 15) : color.red, style=plot.style_stepline_diamond)
+plot(not showWeeklyLabelOnly and showMA200 and showWeekly ? plotMA200W : na, linewidth=2, color=color.new(#fa3c3c, 15), style=plot.style_cross)
+plot(not showDaylyLabelOnly and showMA200 and showDayly ? plotMA200D : na, linewidth=3, color=bar_index % 3 == 0 ? color.gray : color.red)
+plot(not show4HourLabelOnly and showMA200 and show4Hour ? plotMA200H4 : na, linewidth=2, color=bar_index % 2 == 0 ? color.red : color.black)
+plot(not show1HourLabelOnly and showMA200 and show1Hour ? plotMA200H1 : na, linewidth=1, color=color.new(color.red, 15))
+plot(not show30MinLabelOnly and showMA200 and show30Min ? plotMA200M30 : na, linewidth=1, color=color.new(color.red, 15), style=plot.style_circles)
 
 
 /////////////////
