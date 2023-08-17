@@ -1,6 +1,16 @@
 //@version=5
 indicator('MAs Multi Temp. Volume check', shorttitle='MA\'s MultiTemp', overlay=true)
 
+//-------------------
+// values to offset label on screen, para q la etiqueta no este pegado a la vela
+// we use minimal time of bars as an offset in future 
+var float minBarTime = 999999999999
+currentTime = time(timeframe.period)
+timeOfCurrentBar = ta.change(currentTime, 1)
+minBarTime := not na(minBarTime) ? math.min(timeOfCurrentBar, minBarTime) : timeOfCurrentBar
+//---------------
+
+
 showEMA20 = input(title='mostrar EMA 20', defval=true)
 showMA50 = input(title='mostrar MA 50', defval=true)
 showMA100 = input(title='mostrar MA 100', defval=false)
@@ -19,7 +29,8 @@ show1HourLabelOnly = input.bool(title='indicador 1 hora (solo marca)', tooltip='
 show30Min = input(title='indicador 30 minutos', defval=false)
 show30MinLabelOnly = input.bool(title='indicador 30 minutos (solo marca)', tooltip='only show a mark at right without ploting the MA', defval=false)
 
-showVWAP = input(title='VWAP', defval=true)
+
+
 barcolor = input.bool(title='color bar', defval = true, tooltip = 'bar color based on buy/sell volume, instead of open/close')
 
 // Take input for which daily SMAs to use
@@ -32,12 +43,16 @@ inputMA200 = input.int(title='EMA 200', minval=1, step=1, defval=200)
 // volume color bars
 
 length = input.int(title='volume length', tooltip='how many candles will use to calculate volume strength', minval=1, step=1, defval=30)
+inputVolumeFactorMid = input.float(title='Volume factor Mid', minval=0.5, step=0.1, defval=0.5, tooltip = 'new candle vol VS prev.candles vol average')
+inputVolumeFactorHigh = input.float(title='Volume factor High', minval=0.5, step=0.1, defval=1.5, tooltip = 'new candle vol VS prev.candles vol average')
+
+
 avrg = ta.sma(volume, length)
 
 // rojos
-volrojoalto = volume > avrg * 1.5 and close < open
-volrojomedio = volume >= avrg * 0.5 and volume <= avrg * 1.5 and close < open
-volrojobajo = volume < avrg * 0.5 and close < open
+volrojoalto = volume > avrg * inputVolumeFactorHigh and close < open
+volrojomedio = volume >= avrg * inputVolumeFactorMid and volume <= avrg * inputVolumeFactorHigh and close < open
+volrojobajo = volume < avrg * inputVolumeFactorMid and close < open
 
 //verdes
 volverdealto = volume > avrg * 1.5 and close > open
@@ -45,17 +60,28 @@ volverdemedio = volume >= avrg * 0.5 and volume <= avrg * 1.5 and close > open
 volverdebajo = volume < avrg * 0.5 and close > open
 
 
-colrojooscuro = color.maroon
-colrojo = color.red
-colrojoclaro = color.orange
+colrojooscuro = color.rgb(136, 14, 79, 30)
+colrojo = color.rgb(255, 82, 82, 30)
+colrojoclaro = color.rgb(255, 153, 0, 30)
 
 
-colverdeoscuro = color.rgb(0, 50, 0, 1)
-colverde = color.rgb(0, 150, 0, 1)
-colverdeclaro = color.rgb(0, 250, 0, 1)
+colverdeoscuro = color.rgb(0, 50, 0, 30)
+colverde = color.rgb(0, 150, 0, 30)
+colverdeclaro = color.rgb(0, 250, 0, 30)
 
 
 color = volrojoalto ? colrojooscuro : volrojomedio ? colrojo : volrojobajo ? colrojoclaro : volverdealto ? colverdeoscuro : volverdemedio ? colverde : volverdebajo ? colverdeclaro : na
+
+// rsiValue = ta.rsi(priceData, rsiLength)
+// gradientColour = color.from_gradient(rsiValue, osLevel, obLevel, 
+// 	 osColour, obColour)
+
+// stochValue = ta.sma(ta.stoch(close, high, low, 14), 3)
+// gradientColour = color.from_gradient(stochValue, 0, 100, 
+//      color.maroon, color.lime)
+
+
+
 
 // colorear barras si el volumen de compra es mayor que el de ventas de verde(ish).. (a pesar q la vela es roja/venta)
 // o de rojo(ish) si el volumen de venta es mayor al de compras (a pesar q la vela es verde/compra)
@@ -66,11 +92,14 @@ sellVolume =  (high==low)? 0: volume*(high-close)/(high-low)
 if(barcolor)
     if(buyVolume>sellVolume)
         color := volverdealto ? colverdeoscuro : volverdemedio ? colverde : volverdebajo ? colverdeclaro : color.green
+        // color := color.from_gradient(ta.rsi(volume,length), 0, 100,  colverdeclaro, colverdeoscuro)
 
     if(sellVolume>buyVolume)
         color := volrojoalto ? colrojooscuro : volrojomedio ? colrojo : volrojobajo ? colrojoclaro : color.red
+        // color := color.from_gradient(ta.rsi(volume,length), 0, 100,  colrojoclaro, colrojooscuro)
 
 barcolor(color)
+// barcolor(gradientColour)
 
 /// fin volume color bars
 
@@ -114,8 +143,24 @@ plotMA200H1 = request.security(syminfo.tickerid, '60', MA200)
 plotMA200M30 = request.security(syminfo.tickerid, '30', MA200)
 
 
+// vwap
+showVWAP = input(title='VWAP', defval=true, group="vwap", inline="vwap")
+plotVWAPColor = input.color(color.teal, title="color", group="vwap", inline="vwap")
+// vwapAnchorInput = input.string("Daily", "Anchor", options = ["Daily", "Weekly", "Monthly"])
+// anchorTimeframe = switch vwapAnchorInput
+//     "Daily"   => "1D"
+//     "Weekly"  => "1W"
+//     "Monthly" => "1M"
+// anchor = timeframe.change(anchorTimeframe)
+// vwapValue = ta.vwap(close, anchor)
 vwapValue = ta.vwap(close)
 
+if showVWAP
+    var label wvapLabel = label.new(bar_index, vwapValue, '----- VWAP', xloc=xloc.bar_time, yloc=yloc.price, color=color.green, style=label.style_none, textcolor=color.lime, size=size.small)
+    label.set_x(wvapLabel, int(currentTime + 18* minBarTime)) 
+    label.set_y(wvapLabel, vwapValue)
+// Plot VWAP current temporality
+plot(showVWAP ? vwapValue : na, color=plotVWAPColor, linewidth=2)
 
 
 
@@ -125,16 +170,12 @@ var offsetD = 12
 var offset4H = 9
 var offset1H = 6
 var offset30m = 3
-var offsetVWAP = 18
-
-// we use minimal time of bars as an offset in future 
-var float minBarTime = 999999999999
-currentTime = time(timeframe.period)
-timeOfCurrentBar = ta.change(currentTime, 1)
-minBarTime := not na(minBarTime) ? math.min(timeOfCurrentBar, minBarTime) : timeOfCurrentBar
 
 
-if showMonthly and barstate.islast
+
+
+
+if showMonthlyLabelOnly and barstate.islast
     if showEMA20
         var label l20m = label.new(bar_index, plotEMA20M, '--- M', xloc=xloc.bar_time, yloc=yloc.price, color=color.green, style=label.style_none, textcolor=color.white, size=size.small)
         label.set_x(l20m, int(currentTime + offsetW * minBarTime))
@@ -155,7 +196,7 @@ if showMonthly and barstate.islast
         label.set_x(l200w, int(currentTime + offsetW * minBarTime))
         label.set_y(l200w, plotMA200M)
 
-if showWeekly and barstate.islast
+if showWeeklyLabelOnly and barstate.islast
     if showEMA20
         var label l20w = label.new(bar_index, plotEMA20W, '--- W', xloc=xloc.bar_time, yloc=yloc.price, color=color.white, style=label.style_none, textcolor=color.white, size=size.small)
         label.set_x(l20w, int(currentTime + offsetW * minBarTime))
@@ -176,7 +217,7 @@ if showWeekly and barstate.islast
         label.set_x(l200w, int(currentTime + offsetW * minBarTime))
         label.set_y(l200w, plotMA200W)
 
-if showDayly and barstate.islast
+if showDaylyLabelOnly and barstate.islast
     if showEMA20
         var label l = label.new(bar_index, plotEMA20D, '--- D', xloc=xloc.bar_time, yloc=yloc.price, color=color.white, style=label.style_none, textcolor=color.white, size=size.small)
         label.set_x(l, int(currentTime + offsetD * minBarTime))
@@ -197,7 +238,7 @@ if showDayly and barstate.islast
         label.set_x(l200w, int(currentTime + offsetD * minBarTime))
         label.set_y(l200w, plotMA200D)
 
-if show4Hour and barstate.islast
+if show4HourLabelOnly and barstate.islast
     if showEMA20
         var label l = label.new(bar_index, plotEMA20H4, '--- 4h', xloc=xloc.bar_time, yloc=yloc.price, color=color.white, style=label.style_none, textcolor=color.white, size=size.small)
         label.set_x(l, int(currentTime + offset4H * minBarTime))
@@ -218,7 +259,7 @@ if show4Hour and barstate.islast
         label.set_x(l200w, int(currentTime + offset4H * minBarTime))
         label.set_y(l200w, plotMA200H4)
 
-if show1Hour and barstate.islast
+if show1HourLabelOnly and barstate.islast
     if showEMA20
         var label l = label.new(bar_index, plotEMA20H1, '--- 1h', xloc=xloc.bar_time, yloc=yloc.price, color=color.white, style=label.style_none, textcolor=color.white, size=size.small)
         label.set_x(l, int(currentTime + offset1H * minBarTime))
@@ -239,7 +280,7 @@ if show1Hour and barstate.islast
         label.set_x(l200w, int(currentTime + offset1H * minBarTime))
         label.set_y(l200w, plotMA200H1)
 
-if show30Min and barstate.islast
+if show30MinLabelOnly and barstate.islast
     if showEMA20
         var label l = label.new(bar_index, plotEMA20M30, '--- 30m', xloc=xloc.bar_time, yloc=yloc.price, color=color.white, style=label.style_none, textcolor=color.white, size=size.small)
         label.set_x(l, int(currentTime + offset30m * minBarTime))
@@ -260,18 +301,12 @@ if show30Min and barstate.islast
         label.set_x(l200w, int(currentTime + offset30m * minBarTime))
         label.set_y(l200w, plotMA200M30)
 
-if showVWAP
-    var label wvapLabel = label.new(bar_index, vwapValue, '----- VWAP', xloc=xloc.bar_time, yloc=yloc.price, color=color.green, style=label.style_none, textcolor=color.lime, size=size.small)
-    label.set_x(wvapLabel, int(currentTime + offsetVWAP* minBarTime))
-    label.set_y(wvapLabel, vwapValue)
 
-// Plot VWAP current temporality
-plot(showVWAP ? vwapValue : na, color=color.new(color.teal, 0), linewidth=2)
 // Plot (e)MA current temporality
-plot(EMA20, color=color.new(color.white, 0), linewidth=1)
-plot(MA50, color=color.new(color.yellow, 0), linewidth=1)
-plot(MA100, color=color.new(color.maroon, 0), linewidth=1)
-plot(MA200, color=color.new(color.red, 0), linewidth=1)
+plot(showEMA20 ? EMA20 : na, color=color.new(color.white, 0), linewidth=1)
+plot(showMA50 ? MA50 : na, color=color.new(color.yellow, 0), linewidth=1)
+plot(showMA100 ? MA100 : na, color=color.new(color.maroon, 0), linewidth=1)
+plot(showMA200 ? MA200 : na, color=color.new(color.red, 0), linewidth=1)
 
 
 
@@ -279,33 +314,33 @@ plot(MA200, color=color.new(color.red, 0), linewidth=1)
 
 
 // Plot the SMAs/EMAs
-plot(not showMonthlyLabelOnly and showEMA20 and showMonthly ? plotEMA20M : na, linewidth=2, color=bar_index % 3 == 0 ?color.new(color.blue, 15) : color.white, style=plot.style_stepline_diamond)
-plot(not showWeeklyLabelOnly and showEMA20 and showWeekly ? plotEMA20W : na, linewidth=2, color=color.new(color.white, 15), style=plot.style_cross)
-plot(not showDaylyLabelOnly and showEMA20 and showDayly ? plotEMA20D : na, linewidth=3, color=bar_index % 3 == 0 ? color.gray : color.white)
-plot(not show4HourLabelOnly and showEMA20 and show4Hour ? plotEMA20H4 : na, linewidth=2, color=bar_index % 2 == 0 ? color.white : color.black)
-plot(not show1HourLabelOnly and showEMA20 and show1Hour ? plotEMA20H1 : na, linewidth=1, color=color.new(color.white, 15))
-plot(not show30MinLabelOnly and showEMA20 and show30Min ? plotEMA20M30 : na, linewidth=1, color=color.new(color.white, 15), style=plot.style_circles)
+plot(showEMA20 and showMonthly ? plotEMA20M : na, linewidth=2, color=bar_index % 3 == 0 ?color.new(color.blue, 15) : color.white, style=plot.style_stepline_diamond)
+plot(showEMA20 and showWeekly ? plotEMA20W : na, linewidth=2, color=color.new(color.white, 15), style=plot.style_cross)
+plot(showEMA20 and showDayly ? plotEMA20D : na, linewidth=3, color=bar_index % 3 == 0 ? color.gray : color.white)
+plot(showEMA20 and show4Hour ? plotEMA20H4 : na, linewidth=2, color=bar_index % 2 == 0 ? color.white : color.black)
+plot(showEMA20 and show1Hour ? plotEMA20H1 : na, linewidth=1, color=color.new(color.white, 15))
+plot(showEMA20 and show30Min ? plotEMA20M30 : na, linewidth=1, color=color.new(color.white, 15), style=plot.style_circles)
 
-plot(not showMonthlyLabelOnly and showMA50 and showMonthly ? plotMA50M : na, linewidth=2, color=bar_index % 3 == 0 ?color.new(color.blue, 15) : color.yellow, style=plot.style_stepline_diamond)
-plot(not showWeeklyLabelOnly and showMA50 and showWeekly ? plotMA50W : na, linewidth=2, color=color.new(color.yellow, 15), style=plot.style_cross)
-plot(not showDaylyLabelOnly and showMA50 and showDayly ? plotMA50D : na, linewidth=3, color=bar_index % 3 == 0 ? color.gray : color.yellow)
-plot(not show4HourLabelOnly and showMA50 and show4Hour ? plotMA50H4 : na, linewidth=2, color=bar_index % 2 == 0 ? color.yellow : color.black)
-plot(not show1HourLabelOnly and showMA50 and show1Hour ? plotMA50H1 : na, linewidth=1, color=color.new(color.yellow, 15))
-plot(not show30MinLabelOnly and showMA50 and show30Min ? plotMA50M30 : na, linewidth=1, color=color.new(color.yellow, 15), style=plot.style_circles)
+plot(showMA50 and showMonthly ? plotMA50M : na, linewidth=2, color=bar_index % 3 == 0 ?color.new(color.blue, 15) : color.yellow, style=plot.style_stepline_diamond)
+plot(showMA50 and showWeekly ? plotMA50W : na, linewidth=2, color=color.new(color.yellow, 15), style=plot.style_cross)
+plot(showMA50 and showDayly ? plotMA50D : na, linewidth=3, color=bar_index % 3 == 0 ? color.gray : color.yellow)
+plot(showMA50 and show4Hour ? plotMA50H4 : na, linewidth=2, color=bar_index % 2 == 0 ? color.yellow : color.black)
+plot(showMA50 and show1Hour ? plotMA50H1 : na, linewidth=1, color=color.new(color.yellow, 15))
+plot(showMA50 and show30Min ? plotMA50M30 : na, linewidth=1, color=color.new(color.yellow, 15), style=plot.style_circles)
 
-plot(not showMonthlyLabelOnly and showMA100 and showMonthly ? plotMA100M : na, linewidth=2, color=bar_index % 3 == 0 ?color.new(color.blue, 15) : color.maroon, style=plot.style_stepline_diamond)
-plot(not showWeeklyLabelOnly and showMA100 and showWeekly ? plotMA100W : na, linewidth=2, color=color.new(color.maroon, 15), style=plot.style_cross)
-plot(not showDaylyLabelOnly and showMA100 and showDayly ? plotMA100D : na, linewidth=3, color=bar_index % 3 == 0 ? color.gray : color.maroon)
-plot(not show4HourLabelOnly and showMA100 and show4Hour ? plotMA100H4 : na, linewidth=2, color=bar_index % 2 == 0 ? color.maroon : color.black)
-plot(not show1HourLabelOnly and showMA100 and show1Hour ? plotMA100H1 : na, linewidth=1, color=color.new(color.maroon, 15))
-plot(not show30MinLabelOnly and showMA100 and show30Min ? plotMA100M30 : na, linewidth=1, color=color.new(color.maroon, 15), style=plot.style_circles)
+plot(showMA100 and showMonthly ? plotMA100M : na, linewidth=2, color=bar_index % 3 == 0 ?color.new(color.blue, 15) : color.maroon, style=plot.style_stepline_diamond)
+plot(showMA100 and showWeekly ? plotMA100W : na, linewidth=2, color=color.new(color.maroon, 15), style=plot.style_cross)
+plot(showMA100 and showDayly ? plotMA100D : na, linewidth=3, color=bar_index % 3 == 0 ? color.gray : color.maroon)
+plot(showMA100 and show4Hour ? plotMA100H4 : na, linewidth=2, color=bar_index % 2 == 0 ? color.maroon : color.black)
+plot(showMA100 and show1Hour ? plotMA100H1 : na, linewidth=1, color=color.new(color.maroon, 15))
+plot(showMA100 and show30Min ? plotMA100M30 : na, linewidth=1, color=color.new(color.maroon, 15), style=plot.style_circles)
 
-plot(not showMonthlyLabelOnly and showMA200 and showMonthly ? plotMA200M : na, linewidth=2, color=bar_index % 3 == 0 ?color.new(color.blue, 15) : color.red, style=plot.style_stepline_diamond)
-plot(not showWeeklyLabelOnly and showMA200 and showWeekly ? plotMA200W : na, linewidth=2, color=color.new(#fa3c3c, 15), style=plot.style_cross)
-plot(not showDaylyLabelOnly and showMA200 and showDayly ? plotMA200D : na, linewidth=3, color=bar_index % 3 == 0 ? color.gray : color.red)
-plot(not show4HourLabelOnly and showMA200 and show4Hour ? plotMA200H4 : na, linewidth=2, color=bar_index % 2 == 0 ? color.red : color.black)
-plot(not show1HourLabelOnly and showMA200 and show1Hour ? plotMA200H1 : na, linewidth=1, color=color.new(color.red, 15))
-plot(not show30MinLabelOnly and showMA200 and show30Min ? plotMA200M30 : na, linewidth=1, color=color.new(color.red, 15), style=plot.style_circles)
+plot(showMA200 and showMonthly ? plotMA200M : na, linewidth=2, color=bar_index % 3 == 0 ?color.new(color.blue, 15) : color.red, style=plot.style_stepline_diamond)
+plot(showMA200 and showWeekly ? plotMA200W : na, linewidth=2, color=color.new(#fa3c3c, 15), style=plot.style_cross)
+plot(showMA200 and showDayly ? plotMA200D : na, linewidth=3, color=bar_index % 3 == 0 ? color.gray : color.red)
+plot(showMA200 and show4Hour ? plotMA200H4 : na, linewidth=2, color=bar_index % 2 == 0 ? color.red : color.black)
+plot(showMA200 and show1Hour ? plotMA200H1 : na, linewidth=1, color=color.new(color.red, 15))
+plot(showMA200 and show30Min ? plotMA200M30 : na, linewidth=1, color=color.new(color.red, 15), style=plot.style_circles)
 
 
 /////////////////
@@ -317,7 +352,6 @@ plot(not show30MinLabelOnly and showMA200 and show30Min ? plotMA200M30 : na, lin
 // esDoji = math.abs(close - open) / (high - low) < tolerance
 
 //**************************************
-inputVolumeFactor = input.float(title='Volume factor', minval=1.5, step=0.1, defval=2.5, tooltip = 'new candle vol VS prev.candles vol average')
 inputStopCandle = input.bool(title='Show stop candle?', tooltip='previous candle have volume, next candle reverse showing it loosing power', defval=true)
 // VERDE SUPEra roja
 isLastCandleGreen = close[0] > open[0]  // verde ultimo vela (index 0 => ultima vela)
@@ -335,7 +369,7 @@ isPreviousCandleRed = close[1] < open[1]  // rojo  (index 1 => vela anterior)
 // idea indicador.. de rojo con mucho volumen --> A --> verde
 volAverage = ta.sma(volume, length)
 // volrojoalto rojo oscuro con mucho volumen
-prevCandleRojoHighVolume = volume[1] > volAverage * inputVolumeFactor and isPreviousCandleRed
+prevCandleRojoHighVolume = volume[1] > volAverage * inputVolumeFactorHigh and isPreviousCandleRed
 plotshape(inputStopCandle and prevCandleRojoHighVolume and isLastCandleGreen, title='RojoSuperaVerde', location=location.belowbar, color=color.new(color.blue, 60), style=shape.triangleup,textcolor=color.yellow, size=size.normal, text='stop!')
 
 
@@ -347,7 +381,7 @@ isPreviousCandleGreen = close[1] > open[1]  // verde
 
 // idea indicador... de verde con mucho volumen --> A --> rojo
 // volverdealto verde oscuro con mucho volumen
-prevCandleVerdeHighVolume = volume[1] > volAverage * inputVolumeFactor and isPreviousCandleGreen
+prevCandleVerdeHighVolume = volume[1] > volAverage * inputVolumeFactorHigh and isPreviousCandleGreen
 plotshape(inputStopCandle and prevCandleVerdeHighVolume and isLastCandleRed, title='VerdeSuperaRojo', location=location.abovebar, color=color.new(color.blue, 60), style=shape.triangledown,textcolor=color.yellow, size=size.normal, text='stop!')
 
 
@@ -355,7 +389,7 @@ plotshape(inputStopCandle and prevCandleVerdeHighVolume and isLastCandleRed, tit
 // muestra volumen entrando, una candle fuerte, cambiando de color
 inputPushCandle = input.bool(title='Show power candle?', tooltip='shows attemp to reverse (Red<->Green) and high volume entering', defval=true)
 
-haveLastCandleHighVolume = volume > volAverage * inputVolumeFactor
+haveLastCandleHighVolume = volume > volAverage * inputVolumeFactorHigh
 // de rojo a verde con juerza
 
 
@@ -373,7 +407,7 @@ if (inputPushCandle and isPreviousCandleRed and isLastCandleGreen and haveLastCa
     // de rojo a verde con juerza
     if (inputShowLastCandleBigger and lastCandleIsBigger)
         // rojo supera verde
-        myLabel = label.new(x=bar_index, y=na, yloc=yloc.belowbar, text="push R->V", color=color.new(color.blue, 50), textcolor=color.yellow, style=label.style_triangleup,  size=size.small)
+        myLabel = label.new(x=bar_index, y=na, yloc=yloc.belowbar, text="push V->R", color=color.new(color.blue, 50), textcolor=color.yellow, style=label.style_triangleup,  size=size.small)
     else
         myLabel = label.new(x=bar_index, y=na, yloc=yloc.belowbar, text="push", color=color.new(color.blue, 50), textcolor=color.yellow, style=label.style_triangleup,  size=size.small)
 
@@ -382,7 +416,7 @@ if (inputPushCandle and isPreviousCandleGreen and isLastCandleRed and haveLastCa
     // de verde a rojo con juerza
     if (inputShowLastCandleBigger and lastCandleIsBigger)
         // verde supera rojo
-        lbl = label.new(x=bar_index, y=na, yloc=yloc.abovebar, text="push V->R", color=color.new(color.blue, 50), textcolor=color.yellow, style=label.style_triangledown,  size=size.small)
+        lbl = label.new(x=bar_index, y=na, yloc=yloc.abovebar, text="push R->V", color=color.new(color.blue, 50), textcolor=color.yellow, style=label.style_triangledown,  size=size.small)
     else
     // if (not inputShowLastCandleBigger)
         lbl = label.new(x=bar_index, y=na, yloc=yloc.abovebar, text="push", color=color.new(color.blue, 50), textcolor=color.yellow, style=label.style_triangledown,  size=size.small)
@@ -394,36 +428,48 @@ overbought = input.int(title="OB", defval=70)
 oversold = input.int(title="OS", defval=30)
  
 barsToPaint = 1
-bgcolor(inputShowOverSoldBoughtOverlay and ta.barssince(ta.rsi(close, len) >= overbought) < barsToPaint ? color.new(#28813e, 42) : na)
-bgcolor(inputShowOverSoldBoughtOverlay and ta.barssince(ta.rsi(close, len) <= oversold) < barsToPaint ? color.new(#EA4444, 41) : na) 
+bgcolor(inputShowOverSoldBoughtOverlay and ta.barssince(ta.rsi(close, len) >= overbought) < barsToPaint ? color.new(#2a8ba9, 55) : na)
+bgcolor(inputShowOverSoldBoughtOverlay and ta.barssince(ta.rsi(close, len) <= oversold) < barsToPaint ? color.new(#dd52ba, 63) : na) 
 
 
 //----------------
 // bolinger bands
 //----------------
+inputShowDailyBolinger = input.bool(title='Show Daily bolinger', tooltip='show bolinger bars', defval=true)
 inputShowBolinger = input.bool(title='Show bolinger', tooltip='show bolinger bars', defval=true)
 bolingerlength = input.int(title='bolinger length', minval=1, step=1, defval=20)
 src = input.source(close, title="Source")
 mult = input.float(defval=2.0, minval=0.001, maxval=10, step=0.2)
-mult2 = input.float(defval=1.0, minval=0.001, maxval=10, step=0.2)
+// mult2 = input.float(defval=1.0, minval=0.001, maxval=10, step=0.2)
 
-basis = ta.ema(src, bolingerlength)
+basis = ta.sma(src, bolingerlength)
 dev = mult * ta.stdev(src, bolingerlength)
-dev2 = mult2 * ta.stdev(src, bolingerlength)
+// dev2 = mult2 * ta.stdev(src, bolingerlength)
 upper = basis + dev
 lower = basis - dev
-plot(basis, color=color.red) //sma
+plot(inputShowBolinger? basis:na, color=color.red) //sma
 p1a = plot(inputShowBolinger ? upper : na, color= color.orange)
 p1b = plot(inputShowBolinger ? lower : na, color= color.orange)
-fill(p1a, p1b, color= color.rgb(85, 116, 228, 88))
+fill(p1a, p1b, color= color.rgb(85, 116, 228, 95))
 
-basis2 = ta.vwma(src, bolingerlength)
-upper2 = basis2 + dev2
-lower2 = basis2 - dev2
-plot(basis2, color=color.red) //vol weight ma
-p2a = plot(inputShowBolinger ? upper2 : na, color= color.teal)
-p2b = plot(inputShowBolinger ? lower2 : na, color= color.teal)
-fill(p2a, p2b, color= color.rgb( 11, 85, 28, 88))
+
+// daily bolinger
+// dailyClose = request.security(syminfo.tickerid, "1D", close)
+// basis2 = ta.sma(dailyClose, bolingerlength)
+// dev2 = mult * ta.stdev(dailyClose, bolingerlength)
+// upper2 = basis2 + dev2
+// lower2 = basis2 - dev2
+
+
+[bbmiddle, bbupper, bblower] = ta.bb(close, bolingerlength, mult)
+bbmid = request.security(syminfo.tickerid, "1D", bbmiddle[1], gaps = barmerge.gaps_off, lookahead = barmerge.lookahead_on)
+bbup = request.security(syminfo.tickerid, "1D", bbupper[1], gaps = barmerge.gaps_off, lookahead = barmerge.lookahead_on)
+bblow = request.security(syminfo.tickerid, "1D", bblower[1], gaps = barmerge.gaps_off, lookahead = barmerge.lookahead_on)
+
+plot(inputShowDailyBolinger ? bbmid: na, color=color.purple, linewidth = 2) //vol weight ma
+p2a = plot(inputShowDailyBolinger ? bbup : na, color= color.purple, linewidth = 2)
+p2b = plot(inputShowDailyBolinger ? bblow : na, color= color.purple, linewidth = 2)
+fill(p2a, p2b, color= color.rgb( 11, 85, 28, 95))
 
 // bool longSignal = ta.rising(close, 2) and ta.rising(high, 2) and ta.rising(volume, 2) and ta.crossover(close, lower2)
 candleSize = high-low
@@ -432,17 +478,17 @@ candleSliceBelow = lower-low
 percentAbove = candleSliceAbove * 100/candleSize
 percentBelow = candleSliceBelow * 100/candleSize
  
-percentAmount = input.int(title='candle percent',tooltip='slice of candle percent belor or above bolinger band limit\n pink, green arrow, OB,OS crossover/crossunder\n purple=% candle outside+rsi', minval=1, step=1, defval=10)  //10% above or below bolinger band limit 
-
+percentAmount = input.int(title='candle percent',tooltip='slice of candle percent belor or above bolinger band limit\n white arrow=crossover/crossunder\n %=candle outside+rsi', minval=1, step=1, defval=10)  //10% above or below bolinger band limit 
+inputShowCrossPercent = input.bool(title='Show cross with percent', tooltip='show candle crossing BB with percent outside BB', defval=true)
 // (bajo y volvio a subir) cerro dentro del BB  -- la mecha fuera es mayor que X%
-plotchar(ta.crossover(close, lower2) and percentBelow > percentAmount, "long", "🠅", location.belowbar, color=color.new(color.white,20), size = size.small)
-plotchar(ta.crossover(close, lower) and percentBelow > percentAmount, "long", "🠅", location.belowbar, color=color.new(color.white,20), size = size.small)
+// plotchar(ta.crossover(close, lower2) and percentBelow > percentAmount, "long", "🠅", location.belowbar, color=color.new(color.white,20), size = size.small)
+plotchar(inputShowCrossPercent and ta.crossover(close, lower) and percentBelow > percentAmount, "long", "🠅", location.belowbar, color=color.new(color.white,20), size = size.small)
 
 // (subio y volvio a bajar) cerro dentro del BB  -- la mecha fuera es mayor que X%
-plotchar(ta.crossunder(close, upper2) and percentAbove > percentAmount, "sell", "🠇", location.abovebar, color=color.new(color.white,20), size = size.small)
-plotchar(ta.crossunder(close, upper) and percentAbove > percentAmount, "sell", "🠇", location.abovebar, color=color.new(color.white,20), size = size.small)
+// plotchar(ta.crossunder(close, upper2) and percentAbove > percentAmount, "sell", "🠇", location.abovebar, color=color.new(color.white,20), size = size.small)
+plotchar(inputShowCrossPercent and ta.crossunder(close, upper) and percentAbove > percentAmount, "sell", "🠇", location.abovebar, color=color.new(color.white,20), size = size.small)
 
 //  rsi en sobreventa  --- salio fuera del bolinger band --- cerro dentro del BB -- la mecha fuera es mayor que X%
-plotchar(ta.rsi(close, len) < oversold and low<lower and close>lower and percentBelow > percentAmount, "long", "%", location.belowbar, color=color.rgb(255, 235, 255, 6),size = size.tiny)
+plotchar(inputShowCrossPercent and ta.rsi(close, len) < oversold and low<lower and close>lower and percentBelow > percentAmount, "long", "%", location.belowbar, color=color.rgb(255, 235, 255, 6),size = size.tiny)
 //  rsi en sobrecompra  --- salio fuera del BB -- cerro dentro del BB  -- la mecha fuera es mayor que X%
-plotchar(ta.rsi(close, len) >= overbought and high>upper  and close<upper and percentAbove > percentAmount, "sell", "%", location.abovebar, color=color.new(color.white, 5), size = size.tiny)
+plotchar(inputShowCrossPercent and ta.rsi(close, len) >= overbought and high>upper  and close<upper and percentAbove > percentAmount, "sell", "%", location.abovebar, color=color.new(color.white, 5), size = size.tiny)
